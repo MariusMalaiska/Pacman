@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgb(0, 36, 19);
+            background: linear-gradient(132deg, rgba(0, 36, 19, 1) 0%, rgba(9, 9, 121, 1) 25%, rgba(0, 212, 255, 1) 100%);
+            height: 100vw;
+        }
+
+        .grid {
+            margin-top: 50px;
+            width: 1000px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .cube {
+            height: 30px;
+            width: 30px;
+            background-color: green;
+        }
+
+        .empty {
+            background-color: unset;
+        }
+
+        .wall {
+            background-color: black;
+        }
+
+        .apple {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: green;
+
+        }
+
+        .full::after {
+            content: "";
+            position: absolute;
+            height: 10px;
+            width: 10px;
+            background-color: red;
+            border-radius: 100%;
+
+        }
+
+        .pac {
+            position: relative;
+            height: 29px;
+            width: 29px;
+            border: 1px solid green;
+            border-radius: 100%;
+            background-color: yellow;
+            overflow: hidden;
+
+        }
+
+        .pac::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            margin: auto;
+            height: 5px;
+            width: 5px;
+            border-radius: 100%;
+            background-color: black;
+        }
+
+        .pacMouth::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 17px;
+            margin: auto;
+            height: 20px;
+            width: 20px;
+            transform: rotate(65deg);
+            background-color: green;
+        }
+
+        .potion {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: green;
+        }
+
+        .potion::after {
+            content: "";
+            position: absolute;
+            height: 10px;
+            width: 10px;
+            border-radius: 100%;
+            background-color: navy;
+        }
+
+        /* .ghost {
+            z-index: 3;
+        } */
+
+        .red {
+            background-color: red;
+        }
+
+        .pink {
+            background-color: pink;
+        }
+
+        .cyan {
+            background-color: cyan;
+        }
+
+        .orange {
+            background-color: orange;
+        }
+
+        .scared-Ghost {
+            background-color: aquamarine;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid"></div>
+    <h1 class="score"></h1>
+
+    <script>
+        // let pop;
+        // let win;
+        // let pop;
+        // var mySound;
+        // import pop from "Pop.mp3"
+        // import win from "Win.mp3"
+        // import gameOver from "GameOver.mp3"
+        // pop = new sound("Pop.mp3");
+        // mySound = new sound("/Pop.mp3");
+        const pop = new Audio("Pop.mp3")
+        const gameOver = new Audio("GameOver.mp3")
+        const win = new Audio("Win.mp3")
+        // const mySound = "Pop.mp3"
+
+        // win = new sound("Win.mp3");
+        // GameOver = new sound("GameOver.mp3");
+
+        ///////         1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33
+        const layout = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  //1
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,              //2
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1,              //3
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //4
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //5
+            1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //6
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,              //7
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //8
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //9
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //10
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,              //11
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 0, 0, 0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //12
+            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,              //13
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //14
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //15
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //16
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,              //17
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //18
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //19
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //20
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //21
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,              //22
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //23
+            1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1,              //24
+            1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1,              //25
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,              //26
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]             //27
+
+
+        const grid = document.querySelector(".grid")
+        let pacPlacement = 841
+        let score = 0
+        const width = 33
+        let map = [];
+        const scoreDisplay = document.querySelector(".score")
+
+
+        //generate map
+        for (let i = 0; i < layout.length; i++) {
+            const cube = document.createElement("div");
+            cube.classList.add("cube");
+            grid.appendChild(cube);
+            map.push(cube)
+
+            if (layout[i] === 0) {
+                map[i].classList.add("empty")
+            }
+            else if (layout[i] === 1) {
+                map[i].classList.add("wall")
+            } else if (layout[i] === 2) {
+                map[i].classList.add("apple", "full")
+            }
+            else if (layout[i] === 3) {
+                map[i].classList.add("potion")
+            }
+        }
+        // place pacman
+
+        const pac = document.createElement("div");
+        pac.classList.add("pac")
+        map[pacPlacement].appendChild(pac)
+
+        //run pacman run!!!
+
+        const movePac = (e) => {
+            map[pacPlacement].removeChild(pac)
+            map[pacPlacement].classList.remove("danger")
+            switch (e.keyCode) {
+                case 37: //left 
+                    if (pacPlacement - 1 === 395) {
+                        pacPlacement = 428
+                        remove()
+                    }
+                    if (pacPlacement % width !== 0 && !map[pacPlacement - 1].classList.contains("wall") && !map[pacPlacement - 1].classList.contains("empty")) pacPlacement -= 1
+                    break
+                case 38:
+                    if (pacPlacement - width >= 0 && !map[pacPlacement - width].classList.contains("wall") && !map[pacPlacement - width].classList.contains("empty")) pacPlacement -= width
+                    break
+                case 39: //right
+                    if ((pacPlacement + 1) === 429) {
+                        pacPlacement = 396
+                        remove()
+                    }
+                    if (pacPlacement % width < width - 1 && !map[pacPlacement + 1].classList.contains("wall") && !map[pacPlacement + 1].classList.contains("empty")) pacPlacement += 1
+                    break
+                case 40:
+                    if (pacPlacement + width < width * width && !map[pacPlacement + width].classList.contains("wall") && !map[pacPlacement + width].classList.contains("empty")) pacPlacement += width
+                    break
+            }
+            map[pacPlacement].appendChild(pac)
+            map[pacPlacement].classList.add("danger")
+            eatPac()
+            potionConsumed()
+            checkGameOver()
+            checkWin()
+        }
+
+
+
+
+
+
+
+
+        document.addEventListener('keyup', movePac)
+        //helper to identify cube index
+        const cube = document.querySelectorAll(".cube");
+
+        for (let i = 0; i < cube.length; i++) {
+            cube[i].addEventListener("click", function () {
+                console.log(i)
+            });
+        }
+
+
+
+        //eat pacman eat!!!
+        setInterval(eat = () => { pac.classList.add("pacMouth") }, 900);
+        setInterval(eat = () => { pac.classList.remove("pacMouth") }, 1800);
+
+        const remove = (e) => {
+            score++
+
+            map[396].classList.remove("full")
+            map[428].classList.remove("full")
+        }
+        const eatPac = (e) => {
+            // pop.pause()
+            pop.pause();
+            pop.currentTime = 0;
+            if (map[pacPlacement].classList.contains("full")) {
+                score++
+                scoreDisplay.innerHTML = score
+
+                pop.play();
+
+                map[pacPlacement].classList.remove("full")
+            }
+            // if (map[pacPlacement].classList.contains("scared-Ghost")){
+            //     map[pacPlacement].classList.remove(ghost.className, "ghost", "scared-Ghost")
+            // }
+        }
+
+        //potion
+        const potionConsumed = () => {
+            if (map[pacPlacement].classList.contains("potion")) {
+                score += 10
+                ghosts.forEach(ghost => ghost.isScared = true)
+                setTimeout(unScareGhosts, 10000)
+                map[pacPlacement].classList.remove("potion")
+            }
+        }
+
+        const unScareGhosts = () => {
+            ghosts.forEach(ghost => ghost.isScared = false)
+        }
+
+        // Ghost's
+        class Ghost {
+            constructor(className, startPlacement, speed) {
+                this.className = className
+                this.startPlacement = startPlacement
+                this.speed = speed
+                this.currentPlacement = startPlacement
+                this.timerId = NaN
+                this.isScared = false
+            }
+        }
+
+        ghosts = [
+            new Ghost('red', 410, 250),
+            new Ghost('pink', 414, 400),
+            new Ghost('cyan', 444, 300),
+            new Ghost('orange', 446, 500),
+
+            // new Ghost('red', 841, 250),
+            // new Ghost('pink', 841, 400),
+            // new Ghost('cyan', 841, 300),
+            // new Ghost('orange', 841, 500)
+        ]
+
+        ghosts.forEach(ghost => {
+            map[ghost.startPlacement].classList.add(ghost.className)
+            map[ghost.startPlacement].classList.add("ghost")
+
+        });
+
+
+
+        const moveGhosts = (ghost) => {
+            const directions = [-1, +1, width, -width]
+            let direction = directions[Math.floor(Math.random() * directions.length)]
+
+
+            ghost.timerId = setInterval(function () {
+
+                if (!map[ghost.currentPlacement + direction].classList.contains("wall") && !map[ghost.currentPlacement + direction].classList.contains("ghost")) {
+
+                    map[ghost.currentPlacement].classList.remove(ghost.className, "ghost", "scared-Ghost")
+                    ghost.currentPlacement += direction
+                    map[ghost.currentPlacement].classList.add(ghost.className, "ghost")
+
+                } else direction = directions[Math.floor(Math.random() * directions.length)]
+                if (ghost.isScared) {
+                    map[ghost.currentPlacement].classList.add("scared-Ghost")
+                }
+                if (ghost.isScared && map[ghost.currentPlacement].classList.contains("danger")) {
+                    map[ghost.currentPlacement].classList.remove(ghost.className, "ghost", "scared-Ghost")
+                    ghost.currentPlacement = ghost.startPlacement
+                    score += 100
+                    map[ghost.currentPlacement].classList.add(ghost.className, "ghost")
+
+                }
+                checkGameOver()
+            }, ghost.speed)
+        }
+        const checkGameOver = () => {
+            if (map[pacPlacement].classList.contains("ghost") && !map[pacPlacement].classList.contains("scared-Ghost")) {
+                ghosts.forEach(ghost => clearInterval(ghost.timerId))
+                document.removeEventListener("keyup", movePac)
+                scoreDisplay.innerHTML = "GAME OVER!"
+                gameOver.play();
+            }
+        }
+        const checkWin = () => {
+            if (score === 278) {
+                ghosts.forEach(ghost => clearInterval(ghost.timerId))
+                document.removeEventListener("keyup", movePac)
+                scoreDisplay.innerHTML = "WIN!"
+                win.play();
+            }
+        }
+        ghosts.forEach(ghost => {
+            moveGhosts(ghost)
+        });
+    </script>
+</body>
+
+</html>
